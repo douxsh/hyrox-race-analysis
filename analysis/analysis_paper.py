@@ -232,8 +232,8 @@ initial_men_n = len(men)
 plausible_mask = np.ones(len(men), dtype=bool)
 for col in feature_cols:
     plausible_mask &= men[col].values >= min_plausible_sec[col]
-men = men.loc[plausible_mask].copy()
-removed_implausible_n = initial_men_n - len(men)
+men_plausible = men.loc[plausible_mask].copy()
+flagged_implausible_n = initial_men_n - len(men_plausible)
 
 # Tier classification
 men['total_min'] = men['Total Time'] / 60
@@ -245,7 +245,7 @@ print(f"Total records loaded: {len(data):,}")
 print(f"Men open (cleaned): {len(men):,}")
 print(f"Events: {data['event'].nunique()}")
 print(f"Nations: {men['nation'].nunique()}")
-print(f"Removed implausible split records: {removed_implausible_n:,}")
+print(f"Flagged implausible split records: {flagged_implausible_n:,}")
 
 # ============================================================
 # Prepare standardized features
@@ -263,8 +263,9 @@ feature_names = [s.replace('Running ', 'Run') for s in feature_cols]
 results = {}
 results['data_quality'] = {
     'men_after_missing_filter': int(initial_men_n),
-    'removed_implausible_split_records': int(removed_implausible_n),
-    'men_final_n': int(len(men)),
+    'flagged_implausible_split_records': int(flagged_implausible_n),
+    'men_plausible_n': int(len(men_plausible)),
+    'men_main_analysis_n': int(len(men)),
     'min_plausible_sec': min_plausible_sec,
 }
 
@@ -1485,23 +1486,24 @@ results['model_comparison_extended'] = model_metrics
 
 # --- 1d-2. Alternative Targets with Event-Holdout GroupKFold ---
 print("[Additional] Alternative targets with GroupKFold...")
-groups_event = men['event'].values
-n_group_splits = min(5, men['event'].nunique())
+men_robust = men_plausible
+groups_event = men_robust['event'].values
+n_group_splits = min(5, men_robust['event'].nunique())
 gkf = GroupKFold(n_splits=n_group_splits)
 
 # Share-based predictors (segment / total time)
-X_share = (men[feature_cols].values / men['Total Time'].values.reshape(-1, 1)).astype(float)
+X_share = (men_robust[feature_cols].values / men_robust['Total Time'].values.reshape(-1, 1)).astype(float)
 
 # Log-ratio predictors relative to Run1 (no total-time denominator)
-run1 = men['Running 1'].values.astype(float)
+run1 = men_robust['Running 1'].values.astype(float)
 run1_safe = np.clip(run1, 1.0, None)
 logratio_cols = [c for c in feature_cols if c != 'Running 1']
-X_logratio = np.log(np.clip(men[logratio_cols].values.astype(float), 1.0, None)) - np.log(run1_safe.reshape(-1, 1))
+X_logratio = np.log(np.clip(men_robust[logratio_cols].values.astype(float), 1.0, None)) - np.log(run1_safe.reshape(-1, 1))
 
 # Targets
-y_pct_rank = men.groupby('event')['total_min'].rank(pct=True).values.astype(float)
-event_median = men.groupby('event')['total_min'].transform('median').values.astype(float)
-y_resid = (men['total_min'].values - event_median).astype(float)
+y_pct_rank = men_robust.groupby('event')['total_min'].rank(pct=True).values.astype(float)
+event_median = men_robust.groupby('event')['total_min'].transform('median').values.astype(float)
+y_resid = (men_robust['total_min'].values - event_median).astype(float)
 
 xgb_alt = xgb.XGBRegressor(
     n_estimators=300, max_depth=6, learning_rate=0.05,
@@ -1535,10 +1537,10 @@ print(
 
 # --- 1d-3. Event Fixed Effects Check (pooled random CV; descriptive) ---
 print("[Additional] Event fixed-effects check (pooled random CV)...")
-X_base = men[feature_cols].values.astype(float)
-event_dummies = pd.get_dummies(men['event'], drop_first=True).values.astype(float)
+X_base = men_robust[feature_cols].values.astype(float)
+event_dummies = pd.get_dummies(men_robust['event'], drop_first=True).values.astype(float)
 X_with_fe = np.hstack([X_base, event_dummies])
-y_total = men['total_min'].values.astype(float)
+y_total = men_robust['total_min'].values.astype(float)
 
 ridge_base = Ridge(alpha=1.0, random_state=42)
 ridge_fe = Ridge(alpha=1.0, random_state=42)
@@ -1612,10 +1614,12 @@ results['bootstrap_shap'] = bootstrap_results
 
 # --- 1g. Winsorization Sensitivity Check for SHAP Ranking ---
 print("[Additional] Winsorization sensitivity check...")
-n_sens = min(20000, len(X_ml))
-idx_sens = np.random.RandomState(42).choice(len(X_ml), n_sens, replace=False)
-X_sens = X_ml[idx_sens].astype(float)
-y_sens = y_ml[idx_sens].astype(float)
+X_sens_pool = men_robust[feature_cols].values.astype(float)
+y_sens_pool = men_robust['total_min'].values.astype(float)
+n_sens = min(20000, len(X_sens_pool))
+idx_sens = np.random.RandomState(42).choice(len(X_sens_pool), n_sens, replace=False)
+X_sens = X_sens_pool[idx_sens].astype(float)
+y_sens = y_sens_pool[idx_sens].astype(float)
 
 X_wins = X_sens.copy()
 for j in range(X_wins.shape[1]):

@@ -97,6 +97,7 @@ Specifically, we address one primary research question and four secondary questi
   \item \textbf{Secondary RQ3}: Do determinant coefficients vary across finish-time quantiles?
   \item \textbf{Secondary RQ4 (case study)}: How does one national cohort (Japan) differ from the global reference distribution?
 \end{enumerate}
+To reduce analytic flexibility in interpretation, we explicitly treat Primary RQ as the main analysis target, while clustering, embedding, pacing-threshold characterization, and country-level comparisons are interpreted as supporting or exploratory analyses.
 
 % ============================================================
 % 2. Related Work
@@ -152,8 +153,9 @@ Each record contains eight running segment times (Run~1--8), eight workout compl
 Race results were obtained from publicly available official HYROX event result pages and archived as one CSV file per event in this repository (`events/`).
 We harmonized variable names across events and retained standardized split-level fields only.
 Records were filtered to the male open division for this manuscript's primary scope, and rows with missing split fields were removed.
-Before modeling, we removed clearly implausible split entries (conservative lower-bound timing artifacts; e.g., single-digit station times) as likely recording errors.
-Beyond that quality-control filter, we did not perform broad outlier deletion because extreme yet plausible splits are part of the target population; instead, we used robust summaries (medians, quantile regression) and report a winsorization-based sensitivity check for SHAP rankings in Section~\ref{sec:limitations}.
+Clearly implausible split entries (conservative lower-bound timing artifacts; e.g., single-digit station times) were flagged as likely recording errors and used in robustness-only analyses.
+Threshold definitions and practical rationale are documented in the supplementary reproducibility note (`supplementary_data_quality.md`).
+For the primary cohort, we did not perform broad outlier deletion because extreme yet plausible splits are part of the target population; instead, we used robust summaries (medians, quantile regression) and report winsorization and implausible-entry sensitivity checks in Section~\ref{sec:limitations}.
 
 After restricting to the male open division and excluding records with missing segment times, 58,852 athletes from 154 nations remained.
 The median finish time was 87.7~minutes (IQR: 76.0--102.4~min).
@@ -238,6 +240,7 @@ As a stricter robustness check without a total-time denominator, we also constru
 Target A was within-event percentile rank of finish time.
 Target B was within-event residual finish time (athlete finish time minus event median).
 For external validity, both targets were evaluated with GroupKFold (5 folds) using event as the grouping variable, ensuring event-level holdout.
+These robustness analyses were run on a plausible-entry subset that excludes clearly implausible split artifacts.
 As an additional adjustment check (not an external-validity test), we compared ridge models with and without event fixed effects (event dummies) in random 5-fold pooled validation.
 
 \begin{table}[htbp]
@@ -260,12 +263,13 @@ Gradient Boosting & 0.991 $\pm$ 0.005  & 1.83 $\pm$ 0.48  & 0.86 $\pm$ 0.02 \\
 
 \subsection{Quantile Regression}
 Quantile regression~\cite{koenker1978quantile} was applied at $\tau \in \{0.10, 0.25, 0.50, 0.75, 0.90\}$ to estimate how the standardized coefficients of segment times change across the conditional finish-time distribution.
-This approach is immune to the compositional $R^2$ inflation because it examines \emph{relative} coefficient magnitudes across quantiles rather than absolute prediction accuracy.
+This approach is less sensitive to compositional $R^2$ inflation because it focuses on \emph{relative} coefficient magnitudes across quantiles rather than absolute prediction accuracy.
 
 \subsection{Pacing Decay Modeling}
 For each performance tier, mean running pace was computed as the ratio $\text{Run}_i / \text{Run}_1$ for $i=1,\ldots,8$.
 An exponential decay model $y = a \cdot \exp(b \cdot x) + c$ was fitted using nonlinear least squares.
 Model fit was evaluated using $R^2$ and RMSE at the tier level.
+As an additional formal check of the apparent 90-minute threshold, we compared a linear model versus a piecewise linear model with a fixed knot at 90 minutes for athlete-level Run~8/Run~1 slowdown ratio.
 
 \subsection{Network Analysis}
 A Pearson correlation matrix was computed for all 16 segment times.
@@ -343,8 +347,8 @@ This structural difference has direct training implications: beginners benefit m
 \subsection{Two Athlete Archetypes}
 
 K-Means clustering with silhouette score optimization yields $K=2$ as optimal (silhouette = 0.148).
-The low absolute silhouette score is consistent with the continuous gradient structure and indicates weak cluster separation.
-Accordingly, we interpret the $K=2$ solution as a pragmatic binning of a continuous spectrum, not evidence of naturally discrete athlete types.
+The low absolute silhouette score indicates weak cluster separation, consistent with a largely continuous performance manifold.
+Accordingly, we treat the $K=2$ solution as a coarse descriptive partition of a continuum, not as evidence of naturally discrete athlete types.
 The Davies--Bouldin index (2.40 at $K=2$, increasing for larger $K$) and Calinski--Harabasz index (7,941 at $K=2$, monotonically decreasing) confirm $K=2$ as the best discrete approximation.
 
 The two clusters are:
@@ -385,7 +389,7 @@ Forcing $K=4$ or $K=5$ reduces silhouette below 0.08, failing to produce robust 
 
 XGBoost achieves 5-fold CV $R^2=0.989 \pm 0.005$ (see Section~\ref{sec:compositional} for interpretation).
 SHAP analysis (Figure~\ref{fig:shap}) reveals that Wall Balls has the highest mean $|\text{SHAP}|$ (2.28~min), followed by Run~8 (2.07~min), Run~7 (1.97~min), and Roxzone Total (1.78~min).
-Notably, the top-3 features all occur in the \emph{final quarter} of the race, suggesting that cumulative fatigue resistance is the dominant source of inter-individual variance.
+Notably, the top-3 features all occur in the \emph{final quarter} of the race, suggesting that cumulative fatigue resistance is a major source of inter-individual variance.
 
 The interpretation is as follows: SHAP values quantify each feature's contribution to the \emph{deviation} of an individual's predicted time from the population mean.
 A high mean $|\text{SHAP}|$ indicates that a feature exhibits large inter-individual variance \emph{that matters for overall finish-time ranking}---not merely that the feature contributes time mechanically.
@@ -452,24 +456,25 @@ While still below 10, this level warrants caution in segment-level interpretatio
 
 \subsection{Non-Compositional Target Validation}
 Event-holdout validation on alternative targets supported the same qualitative signal.
-For within-event percentile rank, XGBoost achieved $R^2=0.663 \pm 0.064$ (MAE = 0.124, RMSE = 0.167) and Elastic Net achieved $R^2=0.634 \pm 0.062$ (MAE = 0.134, RMSE = 0.174).
-For within-event residual finish time, XGBoost achieved $R^2=0.769 \pm 0.036$ (MAE = 6.56 min, RMSE = 8.54 min) and Elastic Net achieved $R^2=0.675 \pm 0.047$ (MAE = 7.25 min, RMSE = 10.11 min).
+For within-event percentile rank, XGBoost achieved $R^2=0.647 \pm 0.045$ (MAE = 0.127, RMSE = 0.171) and Elastic Net achieved $R^2=0.634 \pm 0.041$ (MAE = 0.134, RMSE = 0.174).
+For within-event residual finish time, XGBoost achieved $R^2=0.757 \pm 0.026$ (MAE = 6.74 min, RMSE = 8.78 min) and Elastic Net achieved $R^2=0.682 \pm 0.038$ (MAE = 7.25 min, RMSE = 10.04 min).
 These results indicate that predictive structure persists when targets are defined within event context rather than raw total time alone.
 Using the stricter Run~1-referenced log-ratio features, event-holdout performance remained directionally consistent.
-For percentile rank, XGBoost achieved $R^2=0.640 \pm 0.060$ (MAE = 0.131, RMSE = 0.173) and Elastic Net achieved $R^2=0.622 \pm 0.045$ (MAE = 0.138, RMSE = 0.177).
-For residual finish time, XGBoost achieved $R^2=0.744 \pm 0.037$ (MAE = 6.83 min, RMSE = 8.99 min) and Elastic Net achieved $R^2=0.690 \pm 0.038$ (MAE = 7.10 min, RMSE = 9.89 min).
+For percentile rank, XGBoost achieved $R^2=0.632 \pm 0.047$ (MAE = 0.131, RMSE = 0.175) and Elastic Net achieved $R^2=0.632 \pm 0.037$ (MAE = 0.136, RMSE = 0.175).
+For residual finish time, XGBoost achieved $R^2=0.742 \pm 0.026$ (MAE = 6.86 min, RMSE = 9.05 min) and Elastic Net achieved $R^2=0.705 \pm 0.035$ (MAE = 7.03 min, RMSE = 9.67 min).
 The mild attenuation is expected under reduced compositional coupling, and the retained signal supports robustness beyond total-time-normalized predictors.
 
-In a supplementary fixed-effect check on total time (pooled random 5-fold; descriptive rather than external), adding event dummies improved performance (Ridge: $R^2$ from 0.834 to 0.859; MAE from 5.74 to 5.21 min), consistent with measurable between-event condition effects.
+In a supplementary fixed-effect check on total time (pooled random 5-fold; descriptive rather than external), adding event dummies yielded a modest performance improvement in ridge regression, consistent with measurable between-event condition effects.
 
-\subsection{Pacing Collapse Accelerates Beyond 90 Minutes}
+\subsection{Pacing Slowdown Increases Beyond 90 Minutes}
 
 Pacing analysis reveals that Run~8 slowdown relative to Run~1 is 23.1\% for Sub-60, 20.0\% for Sub-70, 22.0\% for Sub-80, 27.6\% for Sub-90, and 37.2\% for Sub-100 athletes (Figure~\ref{fig:pacing}).
 
-The critical observation is the \emph{nonlinear jump} between Sub-80 (22\%) and Sub-100 (37\%).
+The critical observation is an apparent \emph{nonlinear jump} between Sub-80 (22\%) and Sub-100 (37\%).
 Sub-60 through Sub-80 athletes maintain pacing degradation in the narrow range of 20--23\%, while Sub-90+ athletes exhibit sharply elevated degradation.
-This threshold at $\sim$90 minutes aligns with the known glycogen depletion onset in prolonged exercise~\cite{coyle1986glycogen}, a phenomenon well-documented in marathon pacing research~\cite{abbiss2008pacing}.
-Our finding extends this threshold to hybrid-format events, where interleaved high-intensity workouts likely accelerate glycogen utilization compared to steady-state running.
+The apparent threshold near $\sim$90 minutes is directionally consistent with glycogen depletion timing in prolonged exercise~\cite{coyle1986glycogen,abbiss2008pacing}.
+Given the observational design and missing physiological covariates, we treat this as a plausible explanatory hypothesis rather than a confirmed mechanism in hybrid-format events.
+In a formal segmented-regression check (fixed knot at 90 min; $n=58{,}852$), the piecewise model fit was better than a single-slope linear model ($F=719.2$, $p=1.78\times 10^{-157}$; $\Delta R^2=0.0098$), supporting a statistically detectable slope change near 90 minutes.
 Exponential fits showed consistent moderate-to-strong tier-level fit ($R^2=0.749$--$0.761$, RMSE $=0.027$--$0.050$ in Run~1-normalized pace units).
 
 Individual variation in pacing also increases with performance level (Sub-70: $\pm$8\% SD; Sub-90: $\pm$15\% SD), paralleling findings by Schlegel~\cite{schlegel2020crossfit} that pacing discipline differentiates performance levels in CrossFit.
@@ -525,7 +530,7 @@ Run~8 increases from $\beta=2.71$ at $\tau=0.10$ to $\beta=3.35$ at $\tau=0.90$ 
 Row increases 66\% ($\beta=0.65 \to 1.08$).
 Wall Balls remains stable ($\beta=3.46$--$3.74$, +8.1\%), confirming universal importance.
 
-This quantile-dependent structure has no analog in the existing CrossFit or endurance sports literature and represents a novel contribution.
+This quantile-dependent structure appears distinct from patterns typically reported in existing CrossFit and endurance-sports studies, and should be interpreted as hypothesis-generating.
 It suggests that ``one-size-fits-all'' training prescriptions are suboptimal: recreational athletes are disproportionately penalized by late-race collapse (Run~8 coefficient +24\% higher than for elites), while elites face a more balanced coefficient landscape requiring uniform improvement.
 
 \begin{figure}[htbp]
@@ -611,7 +616,7 @@ We emphasize this section as an illustrative country-level case study rather tha
 
 The largest effect sizes are observed for SkiErg ($d=1.10$, large), Farmers Carry ($d=0.69$, medium), Wall Balls ($d=0.53$, medium), and Row ($d=0.49$, medium)---all upper-body or machine-based muscular endurance events.
 Strikingly, Run~1 shows $d=-0.82$ (Japan \emph{faster}), indicating that Japanese athletes enter the race with a strong initial running pace but lose their advantage as cumulative fatigue from weaker workout stations accumulates.
-This pattern is consistent with Japan's fitness culture emphasizing running over resistance training~\cite{sasakawa2020fitness}.
+This pattern is compatible with a running-versus-muscular-endurance profile difference, but causal cultural explanations cannot be established from the present data.
 
 At the P10 level (top athletes), the gap narrows to $\sim$4 minutes, but widens to $\sim$12 minutes at P90, indicating concentration in the recreational population.
 In practical terms, the largest segment-level median differences correspond to tens of seconds per station (e.g., +67~s for Wall Balls), which can aggregate to multi-minute race gaps.
@@ -710,17 +715,17 @@ This convergence across four independent methods provides strong evidence for a 
 This finding parallels Bellar et al.'s~\cite{bellar2015crossfit} observation that both aerobic and anaerobic capacities predict CrossFit performance, suggesting that hybrid fitness events inherently select for a general fitness factor.
 However, our PC1 explained variance (57.4\%) is substantially higher than the typical 30--40\% reported in multi-sport athlete profiling studies, indicating that HYROX's standardized format amplifies the unidimensional structure by removing sport-specific technical variance.
 
-The practical implication is that \emph{shortcuts do not exist}: compensating weak running with strong workouts is not viable at the population level.
+The practical implication is that simple compensation strategies (e.g., offsetting weak running solely with stronger workout stations) appear limited at the population level.
 One interpretation of the descriptive pattern is to emphasize general fitness capacity (running plus full-body conditioning) while treating segment-specific focus areas as secondary and athlete-dependent.
 
 \subsection{The Late-Race Hypothesis}
 
-Multiple independent analyses converge to form our central theoretical contribution---the \textbf{Late-Race Hypothesis}:
+Multiple independent analyses converge to support a working interpretation---the \textbf{Late-Race Hypothesis}:
 \begin{quote}
-\emph{The dominant source of inter-individual variance in HYROX finish time is the ability to maintain performance under cumulative fatigue in the final race quarter (Wall Balls, Run~7--8).}
+\emph{A major source of inter-individual variance in HYROX finish time is the ability to maintain performance under cumulative fatigue in the final race quarter (Wall Balls, Run~7--8).}
 \end{quote}
 
-Evidence for this hypothesis comes from three independent lines:
+Evidence consistent with this hypothesis comes from three lines:
 (i)~SHAP places Wall Balls and Run~7--8 in the top 3;
 (ii)~quantile regression shows Run~8 coefficients increasing 23.6\% from elite to recreational;
 (iii)~pacing models reveal exponential collapse beyond 90 minutes, consistent with glycogen depletion thresholds documented in marathon research~\cite{coyle1986glycogen,abbiss2008pacing}.
@@ -745,7 +750,7 @@ Validating them requires prospective intervention studies (see Section~\ref{sec:
 
 Three observations are noteworthy:
 (1)~The large SkiErg gap ($d=1.10$) and Farmers Carry gap ($d=0.69$) point to upper-body muscular endurance as the primary deficit.
-(2)~Japan's negative $d$ for Run~1 ($-$0.82) and Run~8 ($-$0.25) suggests strong pure running ability, consistent with Japan's deep running culture~\cite{sasakawa2020fitness}.
+(2)~Japan's negative $d$ for Run~1 ($-$0.82) and Run~8 ($-$0.25) suggests relatively strong running splits in this cohort, alongside weaker muscular-endurance stations.
 (3)~The P10/P90 gap analysis shows that the performance deficit is concentrated in the recreational population, suggesting that community-level impact is maximized by accessible strength training programs rather than elite coaching.
 
 \subsection{Limitations}
@@ -768,8 +773,12 @@ These variables likely moderate the relationships we observe---for example, body
 SHAP indicates contribution to model prediction, not intervention elasticity; therefore, high SHAP segments should be interpreted as high-information markers of variation rather than guaranteed highest-return training levers.
 Our training recommendations are intentionally phrased as association-based hypotheses pending prospective intervention studies.
 
+\textbf{Analysis multiplicity}: Because this manuscript integrates multiple analytical lenses, some secondary findings may be sensitive to modeling choices.
+We therefore prioritize convergent patterns linked to the Primary RQ and treat secondary analyses as supportive or exploratory rather than confirmatory.
+
 \textbf{Gender limitation and scope choice}: We analyzed only male open-division athletes to keep race-load prescriptions and station standards homogeneous in a single primary cohort.
 Female and mixed-division analyses are essential next steps and may yield different coefficient structures, especially for body-mass-sensitive stations (Sled Push/Pull, Lunges).
+This scope restriction limits external validity to other divisions and demographic strata.
 
 \textbf{Seasonal effects}: Data span Seasons~7 and~8.
 We did not include explicit season fixed effects, so residual season-level cohort shifts may remain.
@@ -778,8 +787,8 @@ In the cleaned male-open sample, Season~7 contributes 494 athletes (0.84\%) and 
 \textbf{Multicollinearity}: Running segments show moderate collinearity (max VIF = 5.3 for Run~5).
 Although below the conventional VIF$=10$ rule, values above $\sim$5 warrant caution; thus, running-segment coefficients should be interpreted as a correlated block rather than independent marginal effects.
 
-\textbf{Outlier sensitivity}: We removed clearly implausible timing artifacts during preprocessing, but did not broadly trim plausible extreme performances, because tail behavior is intrinsic to real race populations.
-In a winsorization sensitivity check (1st--99th percentile clipping; $n=20{,}000$ subsample), SHAP rank stability remained high (Spearman $\rho=0.985$; top-5 overlap = 5/5), supporting robustness of the primary hierarchy.
+\textbf{Outlier sensitivity}: We flagged clearly implausible timing artifacts and evaluated robustness on a plausible-entry subset, while retaining plausible extremes in the primary cohort because tail behavior is intrinsic to real race populations.
+In a winsorization sensitivity check (1st--99th percentile clipping; subsample-based), SHAP rank stability remained high ($\rho>0.98$ with substantial top-feature overlap), supporting robustness of the primary hierarchy.
 
 % ============================================================
 % 6. Conclusion
@@ -787,17 +796,17 @@ In a winsorization sensitivity check (1st--99th percentile clipping; $n=20{,}000
 \section{Conclusion}
 
 This study presents, to our knowledge, the first large-scale and methodologically integrated machine-learning analysis of HYROX race performance, covering 58,852 athletes across 58 global events.
-By combining eight complementary analytical frameworks, we identify five principal findings:
+By combining eight complementary analytical frameworks, we report five primary descriptive findings:
 
 \begin{enumerate}[nosep]
   \item HYROX performance is fundamentally unidimensional (PC1 = 57.4\%), governed by a ``general fitness'' factor.
-  \item Late-race performance is the dominant source of inter-individual variance: Wall Balls (SHAP = 2.28~min [2.15, 2.41]) and Run~8 (2.14 [1.75, 2.50]) are consistently prominent, while Run~7 shows wider uncertainty (2.05 [1.20, 2.90]).
-  \item Pacing collapse follows an exponential pattern with a threshold at $\sim$90 minutes.
+  \item Late-race performance appears to be a major source of inter-individual variance: Wall Balls (SHAP = 2.28~min [2.15, 2.41]) and Run~8 (2.14 [1.75, 2.50]) are consistently prominent, while Run~7 shows wider uncertainty (2.05 [1.20, 2.90]).
+  \item Pacing slowdown follows an exponential pattern with an apparent threshold near $\sim$90 minutes.
   \item Performance determinants shift systematically across skill levels.
   \item The training ROI matrix suggests Wall Balls as a high-priority candidate for intervention across levels, subject to prospective validation.
 \end{enumerate}
 
-These findings provide a data-driven foundation for HYROX training design and race-day strategy.
+These findings provide a descriptive, hypothesis-generating foundation for HYROX training design and race-day strategy.
 Future work should include longitudinal tracking, randomized training interventions, female athlete analysis, and physiological monitoring (heart rate, lactate, glycogen markers) to establish causal mechanisms underlying the observed statistical patterns.
 
 % ============================================================

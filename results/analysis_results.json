@@ -534,97 +534,129 @@
       "cohens_d": 1.1036128353808499,
       "median_diff": 26.0,
       "ci_95_low": 24.0,
-      "ci_95_high": 28.0
+      "ci_95_high": 28.0,
+      "p_value": 9.472247738673139e-291,
+      "q_value": 1.5155596381877022e-289
     },
     "50m Sled Push": {
       "cohens_d": 0.32923676239283806,
       "median_diff": 19.0,
       "ci_95_low": 14.0,
-      "ci_95_high": 24.0
+      "ci_95_high": 24.0,
+      "p_value": 8.218114918765398e-48,
+      "q_value": 1.3148983870024636e-47
     },
     "50m Sled Pull": {
       "cohens_d": 0.4905817058680241,
       "median_diff": 42.0,
       "ci_95_low": 36.0,
-      "ci_95_high": 50.0
+      "ci_95_high": 50.0,
+      "p_value": 4.0327340547978496e-84,
+      "q_value": 1.2904748975353119e-83
     },
     "80m Burpee Broad Jump": {
       "cohens_d": 0.011996069467096896,
       "median_diff": 1.0,
       "ci_95_low": -10.0,
-      "ci_95_high": 9.0
+      "ci_95_high": 9.0,
+      "p_value": 0.8392891525279704,
+      "q_value": 0.8392891525279704
     },
     "1000m Row": {
       "cohens_d": 0.4932585698125274,
       "median_diff": 15.0,
       "ci_95_low": 13.0,
-      "ci_95_high": 18.0
+      "ci_95_high": 18.0,
+      "p_value": 3.654215717070747e-92,
+      "q_value": 1.4616862868282988e-91
     },
     "200m Farmers Carry": {
       "cohens_d": 0.6886036597894775,
       "median_diff": 24.0,
       "ci_95_low": 22.0,
-      "ci_95_high": 28.0
+      "ci_95_high": 28.0,
+      "p_value": 1.0910768223136042e-122,
+      "q_value": 5.819076385672556e-122
     },
     "100m Sandbag Lunges": {
       "cohens_d": 0.10529250540299281,
       "median_diff": 11.0,
       "ci_95_low": 3.0,
-      "ci_95_high": 18.0
+      "ci_95_high": 18.0,
+      "p_value": 3.3238692663664804e-05,
+      "q_value": 3.545460550790912e-05
     },
     "Wall Balls": {
       "cohens_d": 0.5277641834010912,
       "median_diff": 67.0,
       "ci_95_low": 52.0,
-      "ci_95_high": 82.0
+      "ci_95_high": 82.0,
+      "p_value": 3.724066664371075e-59,
+      "q_value": 9.930844438322867e-59
     },
     "Run 1": {
       "cohens_d": -0.8232537962992131,
       "median_diff": -81.0,
       "ci_95_low": -87.0,
-      "ci_95_high": -76.0
+      "ci_95_high": -76.0,
+      "p_value": 1.1260647318824319e-214,
+      "q_value": 9.008517855059455e-214
     },
     "Run 2": {
       "cohens_d": 0.23139931275790201,
       "median_diff": 22.0,
       "ci_95_low": 16.0,
-      "ci_95_high": 25.0
+      "ci_95_high": 25.0,
+      "p_value": 2.4570771513561345e-42,
+      "q_value": 2.8080881729784394e-42
     },
     "Run 3": {
       "cohens_d": 0.31128893069484476,
       "median_diff": 28.0,
       "ci_95_low": 22.0,
-      "ci_95_high": 32.0
+      "ci_95_high": 32.0,
+      "p_value": 1.7477899044180265e-57,
+      "q_value": 3.994948352955489e-57
     },
     "Run 4": {
       "cohens_d": 0.27243987901254535,
       "median_diff": 24.0,
       "ci_95_low": 18.0,
-      "ci_95_high": 29.0
+      "ci_95_high": 29.0,
+      "p_value": 1.693781655365138e-42,
+      "q_value": 2.0846543450647853e-42
     },
     "Run 5": {
       "cohens_d": 0.37341937263696856,
       "median_diff": 31.0,
       "ci_95_low": 25.0,
-      "ci_95_high": 36.0
+      "ci_95_high": 36.0,
+      "p_value": 1.853572818853145e-56,
+      "q_value": 3.70714563770629e-56
     },
     "Run 6": {
       "cohens_d": 0.35368204153086386,
       "median_diff": 25.0,
       "ci_95_low": 19.975,
-      "ci_95_high": 32.0
+      "ci_95_high": 32.0,
+      "p_value": 1.0008233933345963e-50,
+      "q_value": 1.7792415881503933e-50
     },
     "Run 7": {
       "cohens_d": 0.336715504016986,
       "median_diff": 25.0,
       "ci_95_low": 20.0,
-      "ci_95_high": 32.0
+      "ci_95_high": 32.0,
+      "p_value": 1.1964805027105496e-46,
+      "q_value": 1.7403352766698903e-46
     },
     "Run 8": {
       "cohens_d": -0.24806725416352074,
       "median_diff": -33.0,
       "ci_95_low": -41.025,
-      "ci_95_high": -25.0
+      "ci_95_high": -25.0,
+      "p_value": 2.9473923799880556e-44,
+      "q_value": 3.9298565066507407e-44
     }
   },
   "model_comparison_extended": {
@@ -719,5 +751,138 @@
       "ci_95_low": 1.2883536577224732,
       "ci_95_high": 1.6214254558086394
     }
+  },
+  "data_quality": {
+    "men_after_missing_filter": 58852,
+    "flagged_implausible_split_records": 179,
+    "men_plausible_n": 58673,
+    "men_main_analysis_n": 58852,
+    "min_plausible_sec": {
+      "1000m SkiErg": 60,
+      "50m Sled Push": 40,
+      "50m Sled Pull": 40,
+      "80m Burpee Broad Jump": 40,
+      "1000m Row": 60,
+      "200m Farmers Carry": 40,
+      "100m Sandbag Lunges": 40,
+      "Wall Balls": 40,
+      "Roxzone Total": 30,
+      "Running 1": 60,
+      "Running 2": 60,
+      "Running 3": 60,
+      "Running 4": 60,
+      "Running 5": 60,
+      "Running 6": 60,
+      "Running 7": 60,
+      "Running 8": 60
+    }
+  },
+  "alternative_targets": {
+    "share_groupkfold": {
+      "pct_rank_xgboost": {
+        "r2_mean": 0.6466074645557061,
+        "r2_std": 0.04503883478012258,
+        "mae_mean": 0.12678680144336402,
+        "rmse_mean": 0.17128083539594802,
+        "mae_std": 0.009693668696410664,
+        "rmse_std": 0.010594699079236075
+      },
+      "pct_rank_elasticnet": {
+        "r2_mean": 0.6344435028026224,
+        "r2_std": 0.04062404484652067,
+        "mae_mean": 0.1340846917804826,
+        "rmse_mean": 0.1742864424738354,
+        "mae_std": 0.007572522541102383,
+        "rmse_std": 0.009341957932836546
+      },
+      "resid_xgboost": {
+        "r2_mean": 0.7571083788504197,
+        "r2_std": 0.026091874989450224,
+        "mae_mean": 6.734664468503864,
+        "rmse_mean": 8.784241860713065,
+        "mae_std": 0.7131538870844387,
+        "rmse_std": 0.7845231307945291
+      },
+      "resid_elasticnet": {
+        "r2_mean": 0.6821821737698406,
+        "r2_std": 0.03799198146323614,
+        "mae_mean": 7.247890118611797,
+        "rmse_mean": 10.043494282959111,
+        "mae_std": 0.9852163382745897,
+        "rmse_std": 0.9204262904394963
+      }
+    },
+    "logratio_groupkfold": {
+      "pct_rank_xgboost": {
+        "r2_mean": 0.6323667050679367,
+        "r2_std": 0.04667684371654928,
+        "mae_mean": 0.13124745403136198,
+        "rmse_mean": 0.1747022230988488,
+        "mae_std": 0.00805606667378816,
+        "rmse_std": 0.01073476984584096
+      },
+      "pct_rank_elasticnet": {
+        "r2_mean": 0.6324658431930558,
+        "r2_std": 0.03739302207306042,
+        "mae_mean": 0.13570579221750373,
+        "rmse_mean": 0.17479615497386927,
+        "mae_std": 0.007302148190583819,
+        "rmse_std": 0.008610773616707416
+      },
+      "resid_xgboost": {
+        "r2_mean": 0.7417584196853155,
+        "r2_std": 0.0260010555577414,
+        "mae_mean": 6.8618956828855175,
+        "rmse_mean": 9.053949754188432,
+        "mae_std": 0.6818950350796703,
+        "rmse_std": 0.7322655996488069
+      },
+      "resid_elasticnet": {
+        "r2_mean": 0.7054830386681218,
+        "r2_std": 0.03495580638373883,
+        "mae_mean": 7.031500163805776,
+        "rmse_mean": 9.670252247450076,
+        "mae_std": 0.9698446294674608,
+        "rmse_std": 0.8983785671507182
+      }
+    }
+  },
+  "event_fixed_effects_check": {
+    "ridge_without_event_dummies": {
+      "r2_mean": 0.9999969858877173,
+      "r2_std": 2.62480499648623e-06,
+      "mae_mean": 0.014433377939488568,
+      "mae_std": 0.00022207977965019713
+    },
+    "ridge_with_event_dummies": {
+      "r2_mean": 0.9999973503378594,
+      "r2_std": 2.628696155471994e-06,
+      "mae_mean": 0.011927924263260033,
+      "mae_std": 0.00022173751535437415
+    }
+  },
+  "winsorization_sensitivity": {
+    "n_subsample": 5000,
+    "clip_percentiles": [
+      1,
+      99
+    ],
+    "spearman_rho_shap_importance": 0.985294117647059,
+    "top5_overlap": 4,
+    "top5_raw_features": [
+      "Run7",
+      "Wall Balls",
+      "Run5",
+      "Run8",
+      "Run4"
+    ],
+    "top5_winsorized_features": [
+      "Run7",
+      "Wall Balls",
+      "Run5",
+      "Run8",
+      "Roxzone Total"
+    ],
+    "note": "updated in metrics-refresh mode (n=5000 for SHAP sensitivity)"
   }
 }
